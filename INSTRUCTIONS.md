@@ -1,168 +1,266 @@
-# PS Manager — SFML Build Setup
+# Password Manager
 
-This project uses **SFML 3.1.0** and **CMake**. SFML is fetched automatically at build time via CMake's `FetchContent` — you do **not** need to manually download or install SFML itself. You only need a compiler, CMake, and (on Linux) a handful of system libraries that SFML needs to compile.
-
-Follow the section for your OS.
+## Build and Setup Instructions
 
 ---
 
-## Windows (VS Code + CMake Tools)
+# 1. Overview
 
-VS Code doesn't come with a C++ compiler, so you still need Visual Studio's *Build Tools* installed underneath it — you just won't open the Visual Studio IDE itself day-to-day.
+This project is a cross-platform Password Manager built with:
 
-### 1. Install Visual Studio Build Tools (compiler only, not the full IDE)
-Download from https://visualstudio.microsoft.com/downloads/ → scroll to **"Tools for Visual Studio"** → **Build Tools for Visual Studio**.
-During install, check **"Desktop development with C++"**. This gives you MSVC, the Windows SDK, and CMake/Ninja under the hood.
+- C++17
+- SFML 3
+- OpenSSL
+- nlohmann/json
+- CMake
 
-> ⚠️ **Use MSVC, not MinGW.** Mixing MinGW with SFML's fetched binaries can cause missing-DLL / ABI issues. Stick to the MSVC toolchain installed above.
+Supported platforms:
 
-### 2. Install Git
-Download from https://git-scm.com/download/win.
-
-### 3. Install VS Code
-Download from https://code.visualstudio.com/.
-
-### 4. Install VS Code extensions
-Open VS Code → Extensions (`Ctrl+Shift+X`) → install:
-- **C/C++** (Microsoft)
-- **CMake Tools** (Microsoft)
-
-### 5. Clone the repo
-Open a terminal (or VS Code's integrated terminal, `` Ctrl+` ``):
-```powershell
-git clone <REPO_URL>
-cd PS_MANAGER
-code .
-```
-The last command opens the folder in VS Code.
-
-### 6. Select a kit (compiler)
-Press `Ctrl+Shift+P` → **CMake: Select a Kit** → choose the **Visual Studio Build Tools 2022 - amd64** entry (or similar, listing MSVC). If nothing shows up, press `Ctrl+Shift+P` → **CMake: Scan for Kits** first.
-
-### 7. Configure
-Press `Ctrl+Shift+P` → **CMake: Configure**.
-This triggers `FetchContent` to download and build SFML — first run takes a few minutes, watch the **Output** panel (select "CMake/Build" from the dropdown) for progress or errors.
-
-### 8. Build
-Press `Ctrl+Shift+P` → **CMake: Build**, or click **Build** in the blue status bar at the bottom.
-
-### 9. Run it
-Click **Run** in the status bar, or:
-```powershell
-.\build\bin\ps_manager.exe
-```
-
-### Command-line equivalent (if you prefer not to click through the UI)
-```powershell
-cmake -B build -S .
-cmake --build build
-.\build\bin\ps_manager.exe
-```
+- Linux
+- macOS
 
 ---
 
-## Fedora Linux
+# 2. System Requirements
 
-### 1. Install build tools and dependencies
+## Linux
+
+Required packages:
+
+### Fedora
+
 ```bash
-sudo dnf install -y gcc-c++ cmake git
-sudo dnf install -y libX11-devel libXrandr-devel libXcursor-devel libXi-devel \
-    systemd-devel freetype-devel flac-devel libvorbis-devel \
-    mesa-libGL-devel mesa-libEGL-devel mbedtls-devel libssh2-devel openssl-devel
+sudo dnf install \
+    gcc-c++ \
+    cmake \
+    git \
+    openssl-devel
 ```
 
-### 2. Clone the repo
-```bash
-git clone <REPO_URL>
-cd PS_MANAGER
-```
+### Ubuntu / Debian
 
-### 3. Configure and build
-```bash
-cmake -B build -S .
-cmake --build build
-```
-
-### 4. Run it
-```bash
-./build/bin/ps_manager
-```
-
----
-
-## Ubuntu / Debian Linux
-
-### 1. Install build tools and dependencies
 ```bash
 sudo apt update
-sudo apt install -y g++ cmake git pkg-config
-sudo apt install -y libxrandr-dev libxcursor-dev libxi-dev libudev-dev \
-    libfreetype-dev libflac-dev libvorbis-dev libgl1-mesa-dev libegl1-mesa-dev \
-    libmbedtls-dev libssh2-1-dev libssl-dev
+
+sudo apt install \
+    build-essential \
+    cmake \
+    git \
+    libssl-dev
 ```
 
-### 2. Clone the repo
-```bash
-git clone <REPO_URL>
-cd PS_MANAGER
-```
+### Arch Linux
 
-### 3. Configure and build
 ```bash
-cmake -B build -S .
-cmake --build build
-```
-
-### 4. Run it
-```bash
-./build/bin/ps_manager
+sudo pacman -S \
+    base-devel \
+    cmake \
+    git \
+    openssl
 ```
 
 ---
 
 ## macOS
 
-### 1. Install Xcode Command Line Tools
+Install Xcode Command Line Tools:
+
 ```bash
 xcode-select --install
 ```
 
-### 2. Install CMake and Git (via Homebrew)
+Install required packages:
+
 ```bash
-brew install cmake git
+brew install \
+    cmake \
+    git \
+    openssl
 ```
 
-### 3. Clone the repo
+
+---
+
+# 3. Setup Dependencies
+
+First give execution permission to the scripts:
 ```bash
-git clone <REPO_URL>
-cd PS_MANAGER
+# From the root directory run
+chmod +x *.sh
+chmod +x ./builders/*.sh
 ```
 
-### 4. Configure and build
+Then Run:
+
 ```bash
-cmake -B build -S .
-cmake --build build
+./build.sh setup
 ```
 
-### 5. Run it
-```bash
-./build/bin/ps_manager
+The setup script will:
+
+- Verify required tools exist
+- Verify OpenSSL is installed
+- Download SFML 3.0.2
+- Download nlohmann/json
+
+Result:
+
+```text
+vendor/
+├── SFML/
+└── json/
 ```
 
 ---
 
-## How you'll know it worked
+# 5. Build the Project
 
-Running the executable should open a window. If you see a build error, check:
+## Debug Build
 
-- **"Could NOT find X"** during `cmake -B build -S .` → a system dependency is missing (Linux only). Install the missing `-devel`/`-dev` package it names and re-run.
-- **"undefined reference to `main`"** during build → one of the `.cpp` files listed in `CMakeLists.txt`'s `add_executable()` doesn't actually contain a `main()` function.
-- **No error, but no `build/bin/` folder** → the build didn't actually complete; re-run `cmake --build build` and read the full output for the first error.
+```bash
+./build.sh d
+```
+
+Output:
+
+```text
+build/debug/bin/PasswordManager
+```
 
 ---
 
-## Notes
+## Release Build
 
-- Don't commit the `build/` folder — it's machine- and OS-specific and is already excluded via `.gitignore`.
-- SFML version is pinned in the root `CMakeLists.txt` (`GIT_TAG 3.1.0`). Don't change this without syncing with the team, since mismatched SFML versions across machines can cause subtle bugs.
-- If you add new `.cpp` files to the project, remember to add them to the `add_executable(...)` list in `CMakeLists.txt`, or they won't be compiled.
+```bash
+./build.sh b
+```
+
+Output:
+
+```text
+build/release/bin/PasswordManager
+```
+
+---
+
+# 6. Running the Application
+
+## Debug Build
+
+```bash
+./build/debug/bin/PasswordManager
+```
+
+---
+
+## Release Build
+
+```bash
+./build/release/bin/PasswordManager
+```
+
+---
+
+# 7. Cleaning Build Files
+
+Remove all generated build files:
+
+```bash
+./build.sh clean
+```
+
+---
+
+# 8. Rebuilding
+
+## Rebuild Debug
+
+```bash
+./build.sh rebuild-debug
+```
+
+## Rebuild Release
+
+```bash
+./build.sh rebuild-release
+```
+
+---
+
+# 9. Troubleshooting
+
+## OpenSSL Not Found
+
+Linux:
+
+```bash
+pkg-config --modversion openssl
+```
+
+macOS:
+
+```bash
+brew install openssl
+```
+
+---
+
+## SFML Include Errors
+
+If VS Code shows:
+
+```text
+#include errors detected.
+Please update your includePath.
+```
+
+Build the project once:
+
+```bash
+./build.sh d
+```
+
+This generates:
+
+```text
+build/debug/compile_commands.json
+```
+
+Configure VS Code:
+
+```json
+{
+    "C_Cpp.default.compileCommands":
+    "${workspaceFolder}/build/debug/compile_commands.json"
+}
+```
+
+---
+
+## Dependency Setup Failed
+
+Delete vendor libraries:
+
+```bash
+rm -rf vendor/SFML
+rm -rf vendor/json
+```
+
+Run setup again:
+
+```bash
+./build.sh setup
+```
+
+---
+
+## Full Clean Rebuild
+
+```bash
+./build.sh clean
+
+./build.sh setup
+
+./build.sh d
+```
+

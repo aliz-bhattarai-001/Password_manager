@@ -18,4 +18,11 @@ Makefile
 # OS-specific
 .DS_Store
 Thumbs.db
- 
+
+
+# docs
+doc
+something.md
+
+# external/vendor libraries: setup.sh handles it all
+vendor
