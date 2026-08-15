@@ -161,6 +161,4 @@ std::string PassphraseGenerator::generate() {
         }
     }
     return result;
-}
-
-
+} 
